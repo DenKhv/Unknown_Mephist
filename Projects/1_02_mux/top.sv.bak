@@ -1,0 +1,107 @@
+`include "config.svh"
+
+module top (
+    input a, b, sel,
+    output[11:0] mux
+);
+
+
+    //------------------------------------------------------------------------
+
+    // Five different implementations
+
+    wire mux0 = sel ? a : b;
+
+    //------------------------------------------------------------------------
+
+    wire [1:0] ab = { a, b };
+    assign mux1 = ab [sel];
+
+    //------------------------------------------------------------------------
+
+    logic mux2;
+
+    always_comb
+        if (sel)
+            mux2 = a;
+        else
+            mux2 = b;
+
+    //------------------------------------------------------------------------
+
+    logic mux3;
+
+    always_comb
+        case (sel)
+        1'b1: mux3 = a;
+        1'b0: mux3 = b;
+        endcase
+
+    //------------------------------------------------------------------------
+
+    // Exercise 1: Implement mux
+    // without using "?" operation, "if", "case" or a bit selection.
+    // Use only operations "&", "|", "~" and parenthesis, "(" and ")".
+    wire mux4 = 1'b0;
+
+    //------------------------------------------------------------------------
+
+    // Use table
+
+    wire [0:7] table5 =
+    {
+        1'b0, // sel = 0, a = 0, b = 0
+        1'b1, // sel = 0, a = 0, b = 1
+        1'b0, // sel = 0, a = 1, b = 0
+        1'b1, // sel = 0, a = 1, b = 1
+        1'b0, // sel = 1, a = 0, b = 0
+        1'b0, // sel = 1, a = 0, b = 1
+        1'b1, // sel = 1, a = 1, b = 0
+        1'b1  // sel = 1, a = 1, b = 1
+    };
+
+    wire mux5 = table5 [{ sel, a, b }];
+
+    // Exercise 2: Create new table called table5_2 to get mux5_2[i] == mux5[i]
+    // wire mux5_2 = table5_2 [{ a, b, sel }];
+
+    //------------------------------------------------------------------------
+
+    wire [7:0] table6 =
+    {
+        1'b1, // sel = 1, a = 1, b = 1
+        1'b1, // sel = 1, a = 1, b = 0
+        1'b0, // sel = 1, a = 0, b = 1
+        1'b0, // sel = 1, a = 0, b = 0
+        1'b1, // sel = 0, a = 1, b = 1
+        1'b0, // sel = 0, a = 1, b = 0
+        1'b1, // sel = 0, a = 0, b = 1
+        1'b0  // sel = 0, a = 0, b = 0
+    };
+
+    wire mux6 = table6 [{ sel, a, b }];
+
+    //------------------------------------------------------------------------
+
+    wire [7:0] table7 = 8'b1100_1010;
+    wire mux7 = table7 [{ sel, a, b }];
+  
+
+    //------------------------------------------------------------------------
+
+    // Use concatenation operation for all signals:
+
+    wire [7:0] all_muxes
+        = { mux7  , mux6  , mux5 , mux4 ,
+            mux3  , mux2  , mux1 , mux0 };
+
+    assign mux = (all_muxes);
+
+    // Use concatenation operation for the boards with 4 LEDs:
+
+    // assign led = w_led' ({ mux3  , mux2  , mux1 , mux0 });
+    // assign led = w_led' ({ mux6  , mux5  , mux4 , mux0 });
+    // assign led = w_led' ({ mux9  , mux8  , mux7 , mux0 });
+    // assign led = w_led' ({ mux11 , mux10 , mux4 , mux0 });
+
+endmodule
