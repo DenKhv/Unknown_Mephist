@@ -13,4 +13,5 @@ instructions(XOR and Branch)
 
 4)My certificates and other advantages conected with my speciality you can find in separate directory
 
-5)My first UVM-related project is located in the "UVM" directory. It contains a simple UVM environment for VHDL code that simulates a sin and cos table.
+5)My first UVM-related project is located in the "UVM" directory. It contains a simple UVM environment for VHDL code that simulates a sin and cos table
+- I made this project according to the description in the file "sin cos table.pdf"
