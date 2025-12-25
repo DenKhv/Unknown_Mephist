@@ -1,0 +1,358 @@
+ifndef::imagesdir[]
+:imagesdir: ../images
+endif::[]
+ifndef::wd[]
+include::../../../asciidoc_common/header.asciidoc[]
+
+:table-caption: Table
+:figure-caption: Figure
+
+= GP_Timer_Slave peripheral block (GP_TIMERS_Slave)                                       ~_{docdate}_~
+:revdate:
+:toc: macro
+:toclevels: 4
+:toc-title: Content
+:sectnumlevels: 8
+:FULL_DOC:
+
+toc::[]
+
+:sectnums:
+
+endif::[]
+
+[[gp_timer_slave]]
+== GP_Timer_Slave peripheral block (GP_TIMERS_Slave)
+
+The <<figure-timer_slave>> figure shows the structural diagram of the GP_Timer_Slave peripheral block.
+
+
+[#figure-timer_slave]
+.Structural diagram of the GP_Timer_Slave
+image::GP_TIMER.png[scaledwidth=14cm]
+
+
+The input 64-bit value SYNC_VALUE in Gray code from the GP_Timer_Master block is sent to the input of the GP_Timer_Slave block. This value is converted back to a binary value and written to the CNTR register, which consists of two 32-bit parts CNTR_H and CNTR_L. These parts can be programm read or rewritten to the SAVED_CNTR register, which also consists of two parts. It is used when it is necessary to read the full 64-bit value of the time scale. In this case, reading is performed in parts of 32 bits. Therefore, with two consecutive readings, the value of the CNTR register may change and the read parts will not correspond to each other.
+
+Also, the GP_Timer_Slave block provides for the generation of events when a specified value written to the CMPR register is exceeded. The CNTR register value is compared with the CMPR value. When the CNTR register value exceeds the CMPR register value, the corresponding bit in the IRQR register is set.
+
+If the cyclic comparator operation mode is configured, then after setting the bit in the IRQR register, the CMP register is incremented by the value written to the INC register and operation continues. In the single comparator operation mode, after the event is generated, further comparisons are stopped. All bits of the IRQR register are combined using the "OR" function and can be used as an interrupt request.
+
+There are two event generation schemes. Each scheme contains identical CMP and INC registers, distinguished by a postfix (_0 or _1). The CMP and INC registers consist of two 32-bit parts, accessible for reading and writing.
+
+
+
+=== Software accessible registers of GP_Timer_Slave
+
+
+.List of software accessible registers of GP_Timer_Slave
+[#tbl_GP_Timer_Slave_regs,cols="10,20,20,20,50",options="header"]
+|===
+|  Address | Name      |  Access type |  Value after reset    | Description
+| 0x000    | ID              | R      | ID_code     | ID code register
+| 0x004    | VERSION         | R      | ver_code    | Block Version  
+| 0x008    | CNTR_L          | R      | 0xXXXX_XXXX | Low part of CNTR
+| 0x00C    | CNTR_H          | R      | 0xXXXX_XXXX | High part of CNTR
+| 0x010    | SAVE_CNTR       | W      |             | Control of writing from CNTR to SAVED_CNTR
+| 0x014    | SAVED_CNTR_L    | R      | 0xXXXX_XXXX | Low part of SAVED_CNTR
+| 0x018    | SAVED_CNTR_H    | R      | 0xXXXX_XXXX | High part of SAVED_CNTR
+| 0x01C    | ENABLE          | RW     | 0x00000000  | Control of the comparator operation
+| 0x020    | ENABLE_SET      | Set    |             | Bitwise setting of the ENABLE register
+| 0x024    | ENABLE_RST      | Rst    |             | Bitwise reset of the ENABLE register
+| 0x028    | CYCLIC          | W      | 0x00000000  | Comparator operating mode register
+| 0x02C    | CYCLIC_SET      | Set    |             | Bitwise setting of the CYCLIC register
+| 0x030    | CYCLIC_RST      | Rst    |             | Bitwise reset of the CYCLIC register
+| 0x034    | IRQR            | RW     | 0x00000000  | Interrupt Request Register
+| 0x038    | IRQR_SET        | Set    |             | Bitwise setting of the IRQR register
+| 0x03C    | IRQR_RST        | Rst    |             | Bitwise reset of the IRQR register
+| 0x040    | CMPR_L_0        | RW     | 0xXXXX_XXXX | Low part of threshold register for comparator 0
+| 0x044    | CMPR_H_0        | RW     | 0xXXXX_XXXX | High part of threshold register for comparator 0
+| 0x048    | INCR_L_0        | RW     | 0xXXXX_XXXX | Low part of threshold increment register for cyclic comparator 0 operation mode 
+| 0x04C    | INCR_H_0        | RW     | 0xXXXX_XXXX | High part of threshold increment register for cyclic comparator 0 operation mode
+| 0x050    | CMPR_L_1        | RW     | 0xXXXX_XXXX | Low part of threshold register for comparator 1
+| 0x054    | CMPR_H_1        | RW     | 0xXXXX_XXXX | High part of threshold register for comparator 1
+| 0x058    | INCR_L_1        | RW     | 0xXXXX_XXXX | Low part of threshold increment register for cyclic comparator 1 operation mode
+| 0x05C    | INCR_H_1        | RW     | 0xXXXX_XXXX | High part of threshold increment register for cyclic comparator 1 operation mode
+|===
+
+==== ID code register 
+
+The register contains the ID value for this block (currently in test mode).
+
+The <<tbl_rf_ID_GP_Timer_Slave>> contains a description of the fields of the ID register.
+
+.Description of the ID register fields
+[#tbl_rf_ID_GP_Timer_Slave,cols="4,15,6,6,27",options="header"]
+|===
+|  Address | Name     |  Access type |  Value after reset    | Description
+| 31:0     | ID       | R            | ID_code               |  returns a 32-bit ID value
+|===
+
+==== VERSION register 
+
+The register contains information about version of block.
+
+The <<tbl_rf_VER_GP_Timer_Slave>> contains a description of the fields of the VERSION register.
+
+.Description of the VERSION register fields
+[#tbl_rf_VER_GP_Timer_Slave,cols="4,15,6,6,27",options="header"]
+|===
+|  Address | Name     |  Access type |  Value after reset    | Description
+| 31:0     | VERSION  | R            | ver_code              | returns a 32-bit value containing the block version number 
+|===
+
+
+==== CNTR_L register 
+
+The CNTR_L register contains the lower 32 bits of the time scale value.
+
+The <<tbl_rf_CNTR_L_GP_Timer_Slave>> contains a description of the fields of the CNTR_L register.
+
+.Description of the CNTR_L register fields
+[#tbl_rf_CNTR_L_GP_Timer_Slave,cols="4,15,6,6,27",options="header"]
+|===
+|  Address | Name     |  Access type |  Value after reset    | Description
+| 31:0     | CNTR_L   | R            | 0xXXXX_XXXX           | lower 32 bits of the time scale value
+|===
+
+
+==== CNTR_H register 
+
+The CNTR_H register contains the upper 32 bits of the time scale value.
+
+The <<tbl_rf_CNTR_H_GP_Timer_Slave>> contains a description of the fields of the CNTR_H register.
+
+.Description of the CNTR_H register fields
+[#tbl_rf_CNTR_H_GP_Timer_Slave,cols="4,15,6,6,27",options="header"]
+|===
+|  Address | Name     |  Access type |  Value after reset  | Description
+| 31:0     | CNTR_H   | R            | 0xXXXX_XXXX         | upper 32 bits of the time scale value 
+|===
+
+
+==== SAVE_CNTR register
+
+The register does not have any fields. Any write to this register causes the value of the CNTR register to be overwritten in the SAVE_CNTR register.
+
+
+==== SAVED_CNTR_L register
+
+The SAVED_CNTR_L register contains the lower 32 bits of the stored time scale value.
+
+The <<tbl_rf_SAVED_CNTR_L_GP_Timer_Slave>> contains a description of the fields of the SAVED_CNTR_L register.
+
+.Description of the SAVED_CNTR_L register fields
+[#tbl_rf_SAVED_CNTR_L_GP_Timer_Slave,cols="4,15,6,6,27",options="header"]
+|===
+|  Address | Name           |  Access type |  Value after reset  | Description
+| 31:0     | SAVED_CNTR_L   | R            | 0xXXXX_XXXX         |   the lower 32 bits of the stored time scale value
+|===
+
+
+==== SAVED_CNTR_H register 
+
+The SAVED_CNTR_H register contains the upper 32 bits of the stored time scale value.
+
+The <<tbl_rf_SAVED_CNTR_H_GP_Timer_Slave>> contains a description of the fields of the SAVED_CNTR_H register.
+
+.Description of the SAVED_CNTR_H register fields
+[#tbl_rf_SAVED_CNTR_H_GP_Timer_Slave,cols="4,15,6,6,27",options="header"]
+|===
+|  Address | Name           |  Access type |  Value after reset  | Description
+| 31:0     | SAVED_CNTR_H   | R            | 0xXXXX_XXXX         |  the upper 32 bits of the stored time scale value. 
+|===
+
+
+==== ENABLE register
+
+The ENABLE register controls the operation of the comparators. If the comparator is enabled, then when the value of the CNTR register exceeds the threshold value written in the CMPR register, the corresponding bit of the IRQR register will be set.
+
+The <<tbl_rf_ENABLE_GP_Timer_Slave>> contains a description of the fields of the ENABLE register.
+
+.Description of the ENABLE register fields
+[#tbl_rf_ENABLE_GP_Timer_Slave,cols="4,15,6,6,27",options="header"]
+|===
+|  Address | Name           |  Access type |  Value after reset  | Description
+| 1        | EN_CMP_1       | RW           | 0x0                 |  comparator CMP_1 control: +
+                                                                          0 - comparator CMP_1 disable; +
+                                                                          1 - comparator CMP_1 enable;  +
+| 0        | EN_CMP_0       | RW           | 0x0                 |  comparator CMP_0 control: +
+                                                                          0 - comparator CMP_0 disable; +
+                                                                          1 - comparator CMP_0 enable; 
+|===
+
+
+==== ENABLE_SET register
+
+When writing to the ENABLE_SET register, in those bits where there was a "1", the corresponding bit of the ENABLE register will be set, in those bits where there was a "0", the value of the ENABLE register will not change.
+
+==== ENABLE_RST register
+
+When writing to the ENABLE_RST register, in those bits where there was a "1", the corresponding bit of the ENABLE register will be reset, in those bits where there was a "0", the value of the ENABLE register will not change.
+
+
+==== CYCLIC register
+
+The CYCLIC register controls the comparator operating mode. There are 2 modes: cyclic and single. In the single mode, after the event occurs when the value of the CNTR register exceeds the threshold value written to the CMPR register stops the comparator and automatically resets the corresponding bit in the ENABLE register. In the cyclic mode, after the event occurs when the value of the CNTR register exceeds the threshold value written to the CMPR register increments the CMPR register and the comparator continues to operate. Stopping occurs only after a software reset of the ENABLE register or a mode change.
+
+The <<tbl_rf_CYCLIC_GP_Timer_Slave>> contains a description of the fields of the CYCLIC register.
+
+.Description of the CYCLIC register fields
+[#tbl_rf_CYCLIC_GP_Timer_Slave,cols="4,15,6,6,27",options="header"]
+|===
+|  Address | Name           |  Access type |  Value after reset  | Description
+| 1        | CLC_CMP_1      | RW           | 0x0                 |  control of the operating mode of the comparator CMP_1: +
+                                                                          0 - single mode of operation of the comparator CMP_1 ; +
+                                                                          1 - cyclic mode of operation of the comparator CMP_1; 
+| 0        | CLC_CMP_0      | RW           | 0x0                 |  control of the operating mode of the comparator CMP_0: +
+                                                                          0 - single mode of operation of the comparator CMP_0; +
+                                                                          1 - cyclic mode of operation of the comparator CMP_0; 
+|===
+
+==== CYCLIC_SET register
+
+When writing to the CYCLIC_SET register, in those bits where there was a "1", the corresponding bit of the CYCLIC register will be set, in those bits where there was a "0", the value of the CYCLIC register will not change.
+
+==== CYCLIC_RST register
+
+When writing to the CYCLIC_RST register, in those bits where there was a "1", the corresponding bit of the CYCLIC register will be reset, in those bits where there was a "0", the value of the CYCLIC register will not change.
+
+
+==== IRQR register
+
+The IRQR register contains information about events received from the comparators. When a threshold exceeding event occurs, the corresponding IRQR register bit is set. The register output can be used as an interrupt request. Reset is performed by software.
+
+The <<tbl_rf_IRQR_GP_Timer_Slave>>  contains a description of the fields of the IRQR register.
+
+.Description of the IRQR  register fields
+[#tbl_rf_IRQR_GP_Timer_Slave,cols="4,15,6,6,27",options="header"]
+|===
+|  Address | Name           |  Access type |  Value after reset  | Description
+| 1        | REQ_CMP_1      | RW           | 0x0                 |  event from comparator CMP_1: +
+                                                                          0 - there was no event from CMP_1; +
+                                                                          1 - there was event from CMP_1; +
+| 0        | REQ_CMP_0      | RW           | 0x0                 |  event from comparator CMP_0: +
+                                                                          0 - there was no event from CMP_0; +
+                                                                          1 - there was event from CMP_0; 
+|===
+
+
+==== IRQR_SET register
+
+When writing to the IRQR_SET register, in those bits where there was a "1", the corresponding bit of the IRQR register will be set, in those bits where there was a "0", the value of the IRQR register will not change.
+
+==== IRQR_RST register
+
+When writing to the IRQR_RST register, in those bits where there was a "1", the corresponding bit of the IRQR register will be reset; in those bits where there was a "0", the value of the IRQR register will not change.
+
+
+==== CMPR_L_0 register
+
+The CMPR_L_0 register contains the lower 32 bits of the comparator 0 threshold value for comparison with the time scale value in the {CNTR_H,CNTR_L} registers.
+
+The <<tbl_rf_CMPR_L_0_GP_Timer_Slave>>  contains a description of the fields of the CMPR_L_0 register
+
+.Description of the  CMPR_L_0 register
+[#tbl_rf_CMPR_L_0_GP_Timer_Slave,cols="4,15,6,6,27",options="header"]
+|===
+|  Address | Name     |  Access type |  Value after reset  | Description
+| 31:0     | CMP_L    | RW           | 0xXXXX_XXXX         |   lower 32 bits of the threshold value
+|===
+
+
+==== CMPR_H_0 register 
+
+The CMPR_H_0 register contains the upper 32 bits of the comparator 0 threshold value for comparison with the time scale value in the {CNTR_H,CNTR_L} registers.
+
+The <<tbl_rf_CMPR_H_0_GP_Timer_Slave>> contains a description of the fields of the CMPR_H_0 register.
+
+.Description of the  CMPR_H_0 register
+[#tbl_rf_CMPR_H_0_GP_Timer_Slave,cols="4,15,6,6,27",options="header"]
+|===
+|  Address | Name     |  Access type |  Value after reset  | Description
+| 31:0     | CMP_H    | RW           | 0xXXXX_XXXX         |   upper 32 bits of the threshold value
+|===
+
+
+==== INCR_L_0 register 
+
+The INCR_L_0 register contains the lower 32 bits of the increment value of the comparator 0 threshold when operating in cyclic mode.
+
+The <<tbl_rf_INCR_L_0_GP_Timer_Slave>> contains a description of the fields of the INCR_L_0 register.
+
+.Description of the  INCR_L_0 register
+[#tbl_rf_INCR_L_0_GP_Timer_Slave,cols="4,15,6,6,27",options="header"]
+|===
+|  Address | Name     |  Access type |  Value after reset  | Description
+| 31:0     | INC_L    | RW           | 0xXXXX_XXXX         |   lower 32 bits of the increment value 
+|===
+
+
+==== INCR_H_0 register
+
+The INCR_H_0 register contains the upper 32 bits of the increment value of the comparator 0 threshold when operating in cyclic mode.
+
+The <<tbl_rf_INCR_H_0_GP_Timer_Slave>> contains a description of the fields of the INCR_H_0 register.
+
+.Description of the  INCR_H_0 register
+[#tbl_rf_INCR_H_0_GP_Timer_Slave,cols="4,15,6,6,27",options="header"]
+|===
+|  Address | Name     |  Access type |  Value after reset  | Description
+| 31:0     | INC_H    | RW           | 0xXXXX_XXXX         |   upper 32 bits of the increment value
+|===
+
+
+==== CMPR_L_1 register
+
+The CMPR_L_1 register contains the lower 32 bits of the comparator 0 threshold value for comparison with the time scale value in the {CNTR_H,CNTR_L} registers.
+
+The <<tbl_rf_CMPR_L_1_GP_Timer_Slave>>  contains a description of the fields of the CMPR_L_1 register
+
+.Description of the  CMPR_L_1 register
+[#tbl_rf_CMPR_L_1_GP_Timer_Slave,cols="4,15,6,6,27",options="header"]
+|===
+|  Address | Name           |  Access type |  Value after reset  | Description
+| 31:0     | CMP_L          | RW           | 0xXXXX_XXXX         |   lower 32 bits of the threshold value
+|===
+
+
+==== CMPR_H_1 register
+
+The CMPR_H_1 register contains the lower 32 bits of the comparator 0 threshold value for comparison with the time scale value in the {CNTR_H,CNTR_L} registers.
+
+The <<tbl_rf_CMPR_H_1_GP_Timer_Slave>>  contains a description of the fields of the CMPR_H_1 register
+
+.Description of the  CMPR_H_1 register
+[#tbl_rf_CMPR_H_1_GP_Timer_Slave,cols="4,15,6,6,27",options="header"]
+|===
+|  Address | Name     |  Access type |  Value after reset  | Description
+| 31:0     | CMP_H    | RW           | 0xXXXX_XXXX         |   upper 32 bits of the threshold value 
+|===
+
+
+==== INCR_L_1 register 
+
+The INCR_L_1 register contains the lower 32 bits of the increment value of the comparator 1 threshold when operating in cyclic mode.
+
+The <<tbl_rf_INCR_L_1_GP_Timer_Slave>> contains a description of the fields of the INCR_L_1 register.
+
+.Description of the  INCR_L_1 register
+[#tbl_rf_INCR_L_1_GP_Timer_Slave,cols="4,15,6,6,27",options="header"]
+|===
+|  Address | Name     |  Access type |  Value after reset  | Description
+| 31:0     | INC_L    | RW           | 0xXXXX_XXXX         |   lower 32 bits of the increment value 
+|===
+
+
+==== INCR_H_1 register
+
+The INCR_H_1 register contains the upper 32 bits of the increment value of the comparator 1 threshold when operating in cyclic mode.
+
+The <<tbl_rf_INCR_H_1_GP_Timer_Slave>> contains a description of the fields of the INCR_H_1 register.
+
+.Description of the INCR_H_1 register
+[#tbl_rf_INCR_H_1_GP_Timer_Slave,cols="4,15,6,6,27",options="header"]
+|===
+|  Address | Name     |  Access type |  Value after reset  | Description
+| 31:0     | INC_H    | RW           | 0xXXXX_XXXX         |   upper 32 bits of the increment value 
+|===
